@@ -398,6 +398,7 @@ hx merge [options] <branch>
 ```
 
 **Options:**
+- `--strategy <strategy>`: Conflict resolution strategy (`ours`, `theirs`, `manual`). Default: `manual`.
 - `--no-ff`: Create merge commit even if fast-forward possible
 - `--squash`: Squash commits into single commit
 - `--abort`: Abort merge
@@ -405,8 +406,14 @@ hx merge [options] <branch>
 
 **Examples:**
 ```bash
-# Merge branch into current branch
+# Merge branch into current branch (manual conflict resolution)
 hx merge feature-branch
+
+# Merge and always take our branch's version in conflicts
+hx merge feature-branch --strategy ours
+
+# Merge and always take the other branch's version in conflicts
+hx merge feature-branch --strategy theirs
 
 # Abort merge
 hx merge --abort
@@ -417,8 +424,8 @@ hx merge --continue
 
 **Output:**
 ```
-Merging branch 'feature-branch' into 'main'
-Merge completed successfully
+Merging branch 'feature-branch' into 'main' with strategy: ours
+Merge completed with 1 conflicts, resolved automatically using 'ours'.
 Current branch: main
 ```
 

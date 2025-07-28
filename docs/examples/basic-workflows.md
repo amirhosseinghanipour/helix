@@ -216,11 +216,17 @@ cd my-first-project
 # 2. Ensure you're on main branch
 hx checkout main
 
-# 3. Merge the feature branch
+# 3. Merge the feature branch (manual conflict resolution by default)
 hx merge feature/user-authentication
 
+# 3b. Merge the feature branch, always taking our branch's version in conflicts
+hx merge feature/user-authentication --strategy ours
+
+# 3c. Merge the feature branch, always taking the other branch's version in conflicts
+hx merge feature/user-authentication --strategy theirs
+
 # Expected output:
-# Merging branch 'feature/user-authentication' into 'main'
+# Merging branch 'feature/user-authentication' into 'main' with strategy: manual
 # Merge completed successfully
 # Current branch: main
 
@@ -368,10 +374,26 @@ hx commit -m "Update main.js in main branch"
 
 # 5. Attempt to merge (this will create conflicts)
 hx merge feature/conflicting-changes
+# or, to resolve automatically:
+hx merge feature/conflicting-changes --strategy ours
+hx merge feature/conflicting-changes --strategy theirs
 
-# Expected output:
-# Merging branch 'feature/conflicting-changes' into 'main'
+# Expected output (for --strategy ours):
+# Merging branch 'feature/conflicting-changes' into 'main' with strategy: ours
+# Merge completed with 1 conflicts, resolved automatically using 'ours'.
+# Current branch: main
+
+# Expected output (for --strategy theirs):
+# Merging branch 'feature/conflicting-changes' into 'main' with strategy: theirs
+# Merge completed with 1 conflicts, resolved automatically using 'theirs'.
+# Current branch: main
+
+# Expected output (for default/manual):
+# Merging branch 'feature/conflicting-changes' into 'main' with strategy: manual
 # Merge completed with 1 conflicts.
+# Conflicted files:
+#   main.js
+# Please resolve conflicts and commit the result.
 # Current branch: main
 
 # 6. Check status to see conflicted files
@@ -421,6 +443,7 @@ hx log --oneline
 ```
 
 ### What Happened
+- Demonstrated manual and automated conflict resolution using the --strategy flag
 - Created conflicting changes in different branches
 - Demonstrated conflict detection during merge
 - Showed how to resolve conflicts manually

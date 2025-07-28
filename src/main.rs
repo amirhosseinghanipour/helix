@@ -55,6 +55,8 @@ enum Commands {
     /// Merge branches
     Merge {
         branch: String,
+        #[arg(long, value_parser = ["ours", "theirs", "manual"], default_value = "manual")]
+        strategy: String,
     },
     /// Clone a repository
     Clone {
@@ -192,9 +194,14 @@ async fn main() -> anyhow::Result<()> {
             let mut repo = Repository::open(".")?;
             checkout::checkout_branch(&mut repo, branch).await?;
         }
-        Commands::Merge { branch } => {
+        Commands::Merge { branch, strategy } => {
             let mut repo = Repository::open(".")?;
-            merge::merge_branch(&mut repo, branch).await?;
+            let strat = match strategy.as_str() {
+                "ours" => merge::MergeStrategy::Ours,
+                "theirs" => merge::MergeStrategy::Theirs,
+                _ => merge::MergeStrategy::Manual,
+            };
+            merge::merge_branch(&mut repo, branch, Some(strat)).await?;
         }
         Commands::Clone { url, path } => {
             clone::clone_repository(url, path).await?;

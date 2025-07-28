@@ -234,30 +234,65 @@ hx key rotate             # Generate new keypair and update signatures
 
 ## Development Roadmap
 
-### **Phase 1: Core Stability** (Complete)
+### Phase 1: Core Stability (Complete)
 - [x] Basic repository operations
 - [x] Cryptographic signing and verification
 - [x] Hierarchical index system
 - [x] Command-line interface
 
-### **Phase 2: Advanced Features** (In Progress)
+### Phase 2: Advanced Features (In Progress)
 - [ ] Rebase operations
 - [ ] Interactive rebase
 - [ ] Cherry-pick functionality
 - [ ] Stash management
 - [ ] Submodule support
+- [x] **Multi-VCS clone support** (NEW)
 
-### **Phase 3: Performance & Scale** (Planned)
+### Phase 3: Performance & Scale (Planned)
 - [ ] Parallel operations
 - [ ] Large file handling (LFS)
 - [ ] Distributed caching
 - [ ] Advanced compression algorithms
 
-### **Phase 4: Ecosystem** (Planned)
+### Phase 4: Ecosystem (Planned)
 - [ ] GUI applications
 - [ ] IDE integrations
 - [ ] CI/CD plugins
 - [ ] Migration tools from Git
+- [x] **AUR packaging and automated updates** (NEW)
+
+---
+
+## Recent Major Features
+
+### Multi-VCS Clone Support
+Helix can now clone repositories from multiple version control systems:
+- **Helix** (native)
+- **Git** (via `git2` library)
+- **Mercurial (hg)**, **Subversion (svn)**, **Bazaar (bzr)** (via system CLI)
+
+**Usage:**
+```bash
+hx clone <url>
+```
+- The VCS type is auto-detected from the URL.
+- If the required tool (e.g., `hg`, `svn`, `bzr`) is not installed, a clear error message is shown.
+
+### Arch Linux (AUR) Packaging
+- Helix is available as [`helix-vcs`](https://aur.archlinux.org/packages/helix-vcs) on the Arch User Repository.
+- The PKGBUILD is maintained in this repository.
+- The package installs the `hx` binary, license, and documentation.
+
+**Install on Arch Linux:**
+```bash
+yay -S helix-vcs
+# or
+paru -S helix-vcs
+```
+
+### Automated AUR Updates
+- A GitHub Actions workflow automatically updates the AUR package on every new tagged release.
+- This ensures Arch users always have access to the latest stable version of Helix with minimal manual intervention.
 
 ---
 

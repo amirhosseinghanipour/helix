@@ -106,3 +106,21 @@ hx auth test github.com
 ## Conclusion
 
 These improvements transform Helix into a production-ready distributed version control system that can compete with Git while maintaining its security and performance advantages. The sophisticated protocol implementation, comprehensive authentication system, and efficient object transfer mechanisms provide a solid foundation for collaborative development workflows. 
+
+## Recent Development Roadmap
+
+### Multi-VCS Clone Support
+- Helix can now clone not only Helix repositories, but also Git, Mercurial (hg), Subversion (svn), and Bazaar (bzr) repositories.
+- The `hx clone <url>` command auto-detects the VCS type and uses the appropriate backend (native for Helix, `git2` for Git, and system CLI for hg/svn/bzr).
+- Clear error messages are provided if the required VCS tool is not installed.
+
+### AUR Packaging and Distribution
+- A `PKGBUILD` is maintained in the repository for easy Arch Linux packaging.
+- The package is published as `helix-vcs` on the Arch User Repository (AUR).
+- The PKGBUILD installs the `hx` binary, license, and documentation.
+
+### Automated AUR Updates via GitHub Actions
+- A GitHub Actions workflow is set up to automatically update the AUR package on every new tagged release.
+- This ensures Arch users always have access to the latest stable version of Helix with minimal manual intervention.
+
+--- 

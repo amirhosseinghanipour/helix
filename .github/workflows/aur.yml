@@ -1,0 +1,51 @@
+name: Update AUR Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  aur:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up SSH for AUR
+        run: |
+          mkdir -p ~/.ssh
+          echo "$AUR_SSH_PRIVATE_KEY" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          cat >> ~/.ssh/config <<EOF
+          Host aur.archlinux.org
+            HostName aur.archlinux.org
+            User aur
+            IdentityFile ~/.ssh/aur
+            IdentitiesOnly yes
+          EOF
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "amirhosseinghanipour"
+          git config --global user.email "amirhosseinghanipour@users.noreply.github.com"
+
+      - name: Clone AUR repo
+        run: |
+          git clone ssh://aur@aur.archlinux.org/helix-vcs.git aur-helix-vcs
+
+      - name: Copy PKGBUILD and update version
+        run: |
+          cp PKGBUILD aur-helix-vcs/
+          cd aur-helix-vcs
+          # Optionally update .SRCINFO
+          makepkg --printsrcinfo > .SRCINFO
+
+      - name: Commit and push to AUR
+        run: |
+          cd aur-helix-vcs
+          git add PKGBUILD .SRCINFO
+          git commit -m "Update to version ${{ github.ref_name }}"
+          git push
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }} 

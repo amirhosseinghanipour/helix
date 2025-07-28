@@ -216,7 +216,19 @@ async fn main() -> anyhow::Result<()> {
             merge::merge_branch(&mut repo, branch, Some(strat)).await?;
         }
         Commands::Clone { url, path } => {
-            clone::clone_repository(url, path).await?;
+            let target_path = if path.to_string_lossy() == "." {
+                // Extract repo name from URL
+                let url_str = url.trim_end_matches('/');
+                let repo_name = url_str
+                    .rsplit('/')
+                    .next()
+                    .unwrap_or("repo");
+                let repo_name = repo_name.trim_end_matches(".git");
+                std::path::PathBuf::from(repo_name)
+            } else {
+                path.clone()
+            };
+            clone::clone_repository(url, &target_path).await?;
         }
         Commands::Push { force, remote, refspec } => {
             let repo = Repository::open(".")?;

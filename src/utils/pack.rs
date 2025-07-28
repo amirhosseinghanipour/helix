@@ -198,16 +198,81 @@ impl PackBuilder {
         Ok(())
     }
 
-    fn compute_delta(&self, _base: &[u8], target: &[u8]) -> Result<Vec<u8>> {
-        // Simple delta computation - in a real implementation, you'd use
-        // more sophisticated algorithms like xdelta or rsync
+    /// Compute a real delta between base and target using a simple diff algorithm.
+    /// The delta format is:
+    /// [base_size (u32)][target_size (u32)][series of (copy/insert) instructions]
+    /// Each instruction is:
+    ///   - 0x00 [offset (u32)][length (u32)]  -- copy from base
+    ///   - 0x01 [length (u32)][data ...]      -- insert new data
+    fn compute_delta(&self, base: &[u8], target: &[u8]) -> Result<Vec<u8>> {
+        use std::cmp::min;
+
         let mut delta = Vec::new();
-        
-        // For now, just store the differences as a simple format
-        // This is a placeholder - real delta compression would be much more complex
+        // Write base and target sizes
+        delta.extend_from_slice(&(base.len() as u32).to_be_bytes());
         delta.extend_from_slice(&(target.len() as u32).to_be_bytes());
-        delta.extend_from_slice(target);
-        
+
+        let mut base_pos = 0;
+        let mut target_pos = 0;
+
+        while target_pos < target.len() {
+            // Find the longest match of base in target starting at target_pos
+            let mut best_base_off = 0;
+            let mut best_len = 0;
+
+            for b_off in 0..base.len() {
+                let mut l = 0;
+                while b_off + l < base.len()
+                    && target_pos + l < target.len()
+                    && base[b_off + l] == target[target_pos + l]
+                {
+                    l += 1;
+                }
+                if l > best_len && l >= 8 {
+                    // Only consider matches of length >= 8 for efficiency
+                    best_base_off = b_off;
+                    best_len = l;
+                }
+            }
+
+            if best_len >= 8 {
+                // Emit copy instruction
+                delta.push(0x00);
+                delta.extend_from_slice(&(best_base_off as u32).to_be_bytes());
+                delta.extend_from_slice(&(best_len as u32).to_be_bytes());
+                target_pos += best_len;
+            } else {
+                // Emit insert instruction for a single byte (or run of non-matching bytes)
+                let mut insert_start = target_pos;
+                let mut insert_len = 1;
+                while target_pos + insert_len < target.len() {
+                    // Try to extend insert run until a match of >=8 is found
+                    let mut found = false;
+                    for b_off in 0..base.len() {
+                        let mut l = 0;
+                        while b_off + l < base.len()
+                            && target_pos + insert_len + l < target.len()
+                            && base[b_off + l] == target[target_pos + insert_len + l]
+                        {
+                            l += 1;
+                        }
+                        if l >= 8 {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if found {
+                        break;
+                    }
+                    insert_len += 1;
+                }
+                delta.push(0x01);
+                delta.extend_from_slice(&(insert_len as u32).to_be_bytes());
+                delta.extend_from_slice(&target[insert_start..insert_start + insert_len]);
+                target_pos += insert_len;
+            }
+        }
+
         Ok(delta)
     }
 

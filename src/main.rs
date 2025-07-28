@@ -5,13 +5,14 @@ use std::path::PathBuf;
 mod commands;
 mod core;
 mod utils;
+use utils::config::GlobalConfig;
 
 use commands::*;
 use core::repository::Repository;
 
 #[derive(Parser)]
 #[command(name = "hx")]
-#[command(about = "🚀 A modern, fast Git alternative with better UX")]
+#[command(about = "a version control system")]
 #[command(version = "0.1.0")]
 #[command(propagate_version = true)]
 struct Cli {
@@ -122,6 +123,17 @@ enum Commands {
     },
     /// Visualize the commit DAG
     Dag,
+    /// Global configuration
+    Config {
+        #[arg(long)]
+        global: bool,
+        #[arg(long)]
+        get: Option<String>,
+        #[arg(long)]
+        set: Option<String>,
+        #[arg(long)]
+        value: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -299,6 +311,40 @@ async fn main() -> anyhow::Result<()> {
         Commands::Dag => {
             let repo = Repository::open(".")?;
             log::show_dag(&repo).await?;
+        }
+        Commands::Config { global, get, set, value } => {
+            if *global {
+                let mut config = GlobalConfig::load()?;
+                if let Some(key) = set {
+                    if let Some(val) = value {
+                        match key.as_str() {
+                            "user.name" => {
+                                config.set_user_name(val.clone());
+                                config.save()?;
+                                println!("Set user.name = {}", val);
+                            }
+                            "user.email" => {
+                                config.set_user_email(val.clone());
+                                config.save()?;
+                                println!("Set user.email = {}", val);
+                            }
+                            _ => println!("Unknown config key: {}", key),
+                        }
+                    } else {
+                        println!("--value is required with --set");
+                    }
+                } else if let Some(key) = get {
+                    match key.as_str() {
+                        "user.name" => println!("user.name = {}", config.get_user_name().unwrap_or("")),
+                        "user.email" => println!("user.email = {}", config.get_user_email().unwrap_or("")),
+                        _ => println!("Unknown config key: {}", key),
+                    }
+                } else {
+                    println!("Use --set <key> --value <val> or --get <key>");
+                }
+            } else {
+                println!("Only --global config is supported");
+            }
         }
     }
 

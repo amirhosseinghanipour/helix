@@ -768,6 +768,35 @@ user.email=your.email@example.com
 core.repositoryformatversion=0
 ```
 
+## Global Configuration
+
+Helix supports a global configuration file at `~/.helixconfig` (TOML format) for user settings such as name and email.
+
+### Set global user name and email
+
+```bash
+hx config --global --set user.name --value "Your Name"
+hx config --global --set user.email --value "you@example.com"
+```
+
+### Get global user name and email
+
+```bash
+hx config --global --get user.name
+hx config --global --get user.email
+```
+
+### How it is used
+- When creating a commit, if the repository does not specify an author or email, Helix will use the values from the global config as a fallback.
+- The config file is stored at `~/.helixconfig` in TOML format.
+
+Example `~/.helixconfig`:
+```toml
+[user]
+name = "Your Name"
+email = "you@example.com"
+```
+
 ## Utility Commands
 
 ### `hx help`

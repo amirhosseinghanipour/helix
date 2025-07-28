@@ -3,6 +3,7 @@ use anyhow::Result;
 use colored::*;
 use ed25519_dalek::SigningKey;
 use indicatif::{ProgressBar, ProgressStyle};
+use crate::utils::config::GlobalConfig;
 
 pub async fn commit_changes(
     repo: &mut Repository,
@@ -49,12 +50,25 @@ pub async fn commit_changes(
     tree_object.save(&repo.get_objects_dir())?;
     let tree_id = tree_object.id.clone();
 
+    // Load global config for fallback
+    let global_config = GlobalConfig::load().ok();
+    let author = if repo.config.author == "Unknown" || repo.config.author == "" {
+        global_config.as_ref().and_then(|c| c.get_user_name()).unwrap_or("Unknown").to_string()
+    } else {
+        repo.config.author.clone()
+    };
+    let email = if repo.config.email == "unknown@example.com" || repo.config.email == "" {
+        global_config.as_ref().and_then(|c| c.get_user_email()).unwrap_or("unknown@example.com").to_string()
+    } else {
+        repo.config.email.clone()
+    };
+
     // Create commit and sign it
     let commit = Commit::new(
         parent_ids,
         tree_id,
-        repo.config.author.clone(),
-        repo.config.email.clone(),
+        author.clone(),
+        email.clone(),
         message.to_string(),
         repo.index.to_file_changes(),
         Some(keypair),
@@ -81,7 +95,7 @@ pub async fn commit_changes(
 
     // Update current branch
     if let Some(current_branch) = repo.get_current_branch_mut() {
-        current_branch.update_head(commit.id.clone());
+        current_branch.update_head(commit_object.id.clone());
     }
 
     // Clear index after successful commit
@@ -93,7 +107,7 @@ pub async fn commit_changes(
     println!("\n{}", "Commit created successfully!".green().bold());
     println!("Commit ID: {}", commit.get_short_id().cyan());
     println!("Message: {}", message.blue());
-    println!("Author: {} <{}>", repo.config.author, repo.config.email);
+    println!("Author: {} <{}>", author, email);
     println!(
         "Date: {}",
         commit

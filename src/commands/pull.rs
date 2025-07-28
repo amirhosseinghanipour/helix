@@ -35,18 +35,18 @@ pub async fn pull_changes(repo: &Repository) -> Result<()> {
         }
     };
 
-    let mut client = RemoteClient::new(&remote.url);
+    let mut _client = RemoteClient::new(&remote.url);
 
     // Check connectivity
     pb.set_message("Checking remote connectivity...");
-    if !client.check_connectivity().await? {
+    if !_client.check_connectivity().await? {
         println!("{}", "Failed to connect to remote repository".red());
         return Ok(());
     }
 
     // Discover remote capabilities
     pb.set_message("Discovering remote capabilities...");
-    let _capabilities = client.discover_capabilities().await
+    let _capabilities = _client.discover_capabilities().await
         .with_context(|| "Failed to discover remote capabilities")?;
     
     pb.inc(1);
@@ -54,7 +54,7 @@ pub async fn pull_changes(repo: &Repository) -> Result<()> {
     // Get current branch and remote refs
     pb.set_message("Fetching remote state...");
     let current_branch = &repo.current_branch;
-    let remote_refs = client.get_refs().await
+    let remote_refs = _client.get_refs().await
         .with_context(|| "Failed to fetch remote refs")?;
 
     let remote_head = match remote_refs.get(&format!("refs/heads/{}", current_branch)) {
@@ -71,7 +71,7 @@ pub async fn pull_changes(repo: &Repository) -> Result<()> {
     let local_object_hashes: HashSet<String> = local_objects.keys().cloned().collect();
 
     // Get remote objects
-    let remote_object_hashes = client.get_all_object_hashes().await
+    let remote_object_hashes = _client.get_all_object_hashes().await
         .with_context(|| "Failed to fetch remote object hashes")?;
     let remote_objects_set: HashSet<String> = remote_object_hashes.into_iter().collect();
 
@@ -103,7 +103,7 @@ pub async fn pull_changes(repo: &Repository) -> Result<()> {
     };
 
     // Perform negotiation
-    let negotiation_response = client.negotiate_fetch(&negotiation_request).await
+    let negotiation_response = _client.negotiate_fetch(&negotiation_request).await
         .with_context(|| "Failed to negotiate with remote")?;
 
     pb.inc(1);
@@ -111,7 +111,7 @@ pub async fn pull_changes(repo: &Repository) -> Result<()> {
     // Download pack if available
     if let Some(pack_id) = negotiation_response.packfile {
         pb.set_message("Downloading pack...");
-        let pack_data = client.download_pack(&pack_id).await
+        let pack_data = _client.download_pack(&pack_id).await
             .with_context(|| "Failed to download pack")?;
 
         let pack = Pack::from_bytes(&pack_data)
@@ -125,7 +125,7 @@ pub async fn pull_changes(repo: &Repository) -> Result<()> {
     } else {
         // Fallback to individual object download
         pb.set_message("Downloading individual objects...");
-        download_objects_individually(&client, repo, &missing_objects).await?;
+        download_objects_individually(&_client, repo, &missing_objects).await?;
         pb.inc(1);
     }
 
@@ -270,7 +270,7 @@ fn update_local_refs(
     
     if let Some(remote_head) = remote_refs.get(&ref_key) {
         // Update the local branch to point to the remote head
-        if let Some(branch) = repo.get_current_branch() {
+        if let Some(_branch) = repo.get_current_branch() {
             // TODO: Implement proper ref update logic
             // For now, we'll just update the branch head
             println!("Updated {} to {}", current_branch, remote_head);

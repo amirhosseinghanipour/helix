@@ -37,10 +37,6 @@ pub async fn init_repository(path: &Path) -> Result<()> {
     );
     println!("Repository location: {}", path.display().to_string().cyan());
     println!("Current branch: {}", "main".yellow().bold());
-    println!("\n{}", "Next steps:".bold());
-    println!("  hx add .     # Stage all files");
-    println!("  hx commit -m \"Initial commit\"  # Create first commit");
-    println!("  hx status    # Check repository status");
 
     Ok(())
 }

@@ -1,0 +1,93 @@
+# Helix ignore file
+# This file specifies patterns for files and directories that should be ignored by Helix
+
+# Build artifacts
+target/
+build/
+dist/
+out/
+
+# Dependencies
+node_modules/
+vendor/
+*.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Coverage reports
+coverage/
+.nyc_output/
+*.lcov
+
+# Compiled files
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+*.pyc
+__pycache__/
+*.class
+*.jar
+*.war
+*.ear
+
+# Minified files
+*.min.js
+*.min.css
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Test files
+test-results/
+test-output/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Package files
+*.tar.gz
+*.zip
+*.rar
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache directories
+.cache/
+cache/ 
